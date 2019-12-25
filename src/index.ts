@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import splitSeparatedFields from './utils/helpers';
 import { connectToDB, disconnectFromDB } from './services/mongo';
 import communeModel from './models/commune';
-import neigborhoodModel from './models/neigborhood';
 import propertyModel from './models/property';
 
 dotenv.config();
@@ -37,9 +36,9 @@ dotenv.config();
     return neigborhoodProperties;
   }));
 
-  findedProperties.forEach(property => {
-    console.log(property);
-  })
+  const flattedProperties: any[] = [].concat.apply([], ...findedProperties);
+
+  const sortedProperties = flattedProperties.sort((a, b) => Number(a.price) - Number(b.price));
 
   await disconnectFromDB();
 })();
