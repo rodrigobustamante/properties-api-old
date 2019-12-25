@@ -1,25 +1,18 @@
 {
-  /* Poetic base style configuration */
-  "extends": "./node_modules/poetic/config/typescript/tsconfig.json",
-  /* Add your custom configuration after this */
-  "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "src",
     "outDir": "dist",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "isolatedModules": true,
+    "sourceMap": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "jsx": "react",
-    "noEmit": true
-  }
+    "lib": ["es6", "dom"],
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
