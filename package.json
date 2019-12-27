@@ -21,6 +21,7 @@
     "ioredis": "^4.14.1",
     "mongoose": "^5.8.2",
     "nodemon": "^2.0.1",
+    "telegraf": "^3.34.1",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
   },

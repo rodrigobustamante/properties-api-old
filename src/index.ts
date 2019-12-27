@@ -3,6 +3,7 @@ import splitSeparatedFields from './utils/helpers';
 import { connectToDB, disconnectFromDB } from './services/mongo';
 import communeModel from './models/commune';
 import propertyModel from './models/property';
+import sendMessage from './utils/telegraf';
 
 dotenv.config();
 
@@ -40,5 +41,12 @@ dotenv.config();
 
   const sortedProperties = flattedProperties.sort((a, b) => Number(a.price) - Number(b.price));
 
+  const formattedPropertiesText = sortedProperties.map(property => {
+    return `Valor de la propiedad: $${property.price}\nTamaño: ${property.size}㎡\nDormitorios: ${property.rooms}\nBaños: ${property.bathrooms}\nDescripción: ${property.description}\nLink para más información: ${property.link}\n\n`;
+  });
+
+  const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda: \n\nValores entre $${fromPriceCLP} y $${toPriceCLP} \n\n${formattedPropertiesText.map((text:string) => text)}`;
+
   await disconnectFromDB();
+  await sendMessage(telegramMessage);
 })();
