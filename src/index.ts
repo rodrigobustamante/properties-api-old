@@ -11,6 +11,10 @@ dotenv.config();
   const communesInput = splitSeparatedFields(process.env.COMMUNES);
   const fromPriceCLP = splitSeparatedFields(process.env.FROM_PRICE_CLP);
   const toPriceCLP = splitSeparatedFields(process.env.TO_PRICE_CLP);
+  const fromSize = splitSeparatedFields(process.env.FROM_SIZE);
+  const toSize = splitSeparatedFields(process.env.TO_SIZE);
+  const rooms = splitSeparatedFields(process.env.ROOMS);
+  const bathrooms = splitSeparatedFields(process.env.BATHROOMS);
 
   if (!communesInput.length) return;
 
@@ -28,7 +32,10 @@ dotenv.config();
         .find()
         .and([
           { _id: { $in: propertiesIds } },
-          { price: { $gt: Number(fromPriceCLP), $lt: Number(toPriceCLP) } }
+          { price: { $gt: Number(fromPriceCLP), $lt: Number(toPriceCLP) } },
+          { size: { $gt: Number(fromSize), $lt: Number(toSize) } },
+          { rooms },
+          { bathrooms },
         ]).exec();
 
       return properties;
@@ -41,12 +48,16 @@ dotenv.config();
 
   const sortedProperties = flattedProperties.sort((a, b) => Number(a.price) - Number(b.price));
 
-  const formattedPropertiesText = sortedProperties.map(property => {
+  const formattedPropertiesText = sortedProperties.map((property) => {
     return `Valor de la propiedad: $${property.price}\nTamaño: ${property.size}㎡\nDormitorios: ${property.rooms}\nBaños: ${property.bathrooms}\nDescripción: ${property.description}\nLink para más información: ${property.link}\n\n`;
   });
 
-  const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda: \n\nValores entre $${fromPriceCLP} y $${toPriceCLP} \n\n${formattedPropertiesText.map((text:string) => text)}`;
+  const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda: \n\nValores entre $${fromPriceCLP} y $${toPriceCLP}`;
+
+  await sendMessage(telegramMessage);
+  await Promise.all(formattedPropertiesText.map(async (text:string) => {
+    await sendMessage(text);
+  }));
 
   await disconnectFromDB();
-  await sendMessage(telegramMessage);
 })();
