@@ -18,6 +18,9 @@ dotenv.config();
   const rooms = process.env.ROOMS || 0;
   const bathrooms = process.env.BATHROOMS || 0;
 
+  const hasPriceFilter = fromPriceCLP && toPriceCLP;
+  const hasSizeFilter = fromSize && toSize;
+
   if (!communesInput.length) return;
 
   await connectToDB();
@@ -31,9 +34,6 @@ dotenv.config();
 
   const findedProperties = await Promise.all(communes.map(async (commune) => {
     const { properties: propertiesIds } = commune.toObject();
-
-    const hasPriceFilter = fromPriceCLP && toPriceCLP;
-    const hasSizeFilter = fromSize && toSize;
     const extraFilters = [];
 
     if (hasPriceFilter)
@@ -55,24 +55,36 @@ dotenv.config();
         ...extraFilters,
       ]).exec();
 
-      return properties
+    return properties;
   }));
 
-  // Create types for this array
   const flattedProperties: any[] = flattenDeep(findedProperties);
-
   const sortedProperties = flattedProperties.sort((a, b) => Number(a.price) - Number(b.price));
 
   const formattedPropertiesText = sortedProperties.map((property) => {
     return `Valor de la propiedad: $${property.price}\nTamaño: ${property.size}㎡\nDormitorios: ${property.rooms}\nBaños: ${property.bathrooms}\nDescripción: ${property.description}\nLink para más información: ${property.link}\n\n`;
   });
 
-  const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda: \n\nValores entre $${fromPriceCLP} y $${toPriceCLP}`;
+  const filterMessages = [];
+
+  if (hasPriceFilter)
+    filterMessages.push(`\n- Valores entre $${fromPriceCLP} y $${toPriceCLP}`);
+
+  if (hasSizeFilter)
+    filterMessages.push(`\n- Tamaño entre ${fromSize} y ${toSize} (m²)`);
+
+  if (rooms)
+    filterMessages.push(`\n- Cantidad de habitaciones: ${rooms}`);
+
+  if (bathrooms)
+    filterMessages.push(`\n- Cantidad de baños: ${bathrooms}`);
+
+  const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda:${filterMessages.map((message: string) => message)}`;
 
   await sendMessage(telegramMessage);
-  // await Promise.all(formattedPropertiesText.map(async (text: string) => {
-  //   await sendMessage(text);
-  // }));
+  await Promise.all(formattedPropertiesText.map(async (text: string) => {
+    await sendMessage(text);
+  }));
 
   await disconnectFromDB();
 })();
