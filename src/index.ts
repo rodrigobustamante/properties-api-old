@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { flattenDeep } from 'lodash';
 import splitSeparatedFields from './utils/helpers';
 import { connectToDB, disconnectFromDB } from './services/mongo';
 import communeModel from './models/commune';
@@ -9,42 +10,56 @@ dotenv.config();
 
 (async (): Promise<void> => {
   const communesInput = splitSeparatedFields(process.env.COMMUNES);
-  const fromPriceCLP = splitSeparatedFields(process.env.FROM_PRICE_CLP);
-  const toPriceCLP = splitSeparatedFields(process.env.TO_PRICE_CLP);
-  const fromSize = splitSeparatedFields(process.env.FROM_SIZE);
-  const toSize = splitSeparatedFields(process.env.TO_SIZE);
-  const rooms = splitSeparatedFields(process.env.ROOMS);
-  const bathrooms = splitSeparatedFields(process.env.BATHROOMS);
+  const portals = splitSeparatedFields(process.env.PORTALS);
+  const fromPriceCLP = process.env.FROM_PRICE_CLP || 0;
+  const toPriceCLP = process.env.TO_PRICE_CLP || 0;
+  const fromSize = process.env.FROM_SIZE || 0;
+  const toSize = process.env.TO_SIZE || 0;
+  const rooms = process.env.ROOMS || 0;
+  const bathrooms = process.env.BATHROOMS || 0;
 
   if (!communesInput.length) return;
 
   await connectToDB();
 
-  const communes = await communeModel.find({ name: { $in: communesInput } }).populate('neigborhoods');
+  const communes = await communeModel
+    .find()
+    .and([
+      { name: { $in: communesInput } },
+      { portal: { $in: portals } },
+    ]).exec();
 
   const findedProperties = await Promise.all(communes.map(async (commune) => {
-    const { neigborhoods } = commune.toObject();
+    const { properties: propertiesIds } = commune.toObject();
 
-    const neigborhoodProperties = await Promise.all(neigborhoods.map(async (neigborhood) => {
-      const propertiesIds = neigborhood.properties;
+    const hasPriceFilter = fromPriceCLP && toPriceCLP;
+    const hasSizeFilter = fromSize && toSize;
+    const extraFilters = [];
 
-      const properties = propertyModel
-        .find()
-        .and([
-          { _id: { $in: propertiesIds } },
-          { price: { $gt: Number(fromPriceCLP), $lt: Number(toPriceCLP) } },
-          { size: { $gt: Number(fromSize), $lt: Number(toSize) } },
-          { rooms },
-          { bathrooms },
-        ]).exec();
+    if (hasPriceFilter)
+      extraFilters.push({ price: { $gt: Number(fromPriceCLP), $lt: Number(toPriceCLP) } });
 
-      return properties;
-    }));
+    if (hasSizeFilter)
+      extraFilters.push({ size: { $gt: Number(fromSize), $lt: Number(toSize) } });
 
-    return neigborhoodProperties;
+    if (rooms)
+      extraFilters.push({ rooms });
+
+    if (bathrooms)
+      extraFilters.push({ bathrooms });
+
+    const properties = propertyModel
+      .find()
+      .and([
+        { _id: { $in: propertiesIds } },
+        ...extraFilters,
+      ]).exec();
+
+      return properties
   }));
 
-  const flattedProperties: any[] = [].concat.apply([], ...findedProperties);
+  // Create types for this array
+  const flattedProperties: any[] = flattenDeep(findedProperties);
 
   const sortedProperties = flattedProperties.sort((a, b) => Number(a.price) - Number(b.price));
 
@@ -55,9 +70,9 @@ dotenv.config();
   const telegramMessage = `Se han encontrado ${sortedProperties.length} con los siguientes parámetros de búsqueda: \n\nValores entre $${fromPriceCLP} y $${toPriceCLP}`;
 
   await sendMessage(telegramMessage);
-  await Promise.all(formattedPropertiesText.map(async (text:string) => {
-    await sendMessage(text);
-  }));
+  // await Promise.all(formattedPropertiesText.map(async (text: string) => {
+  //   await sendMessage(text);
+  // }));
 
   await disconnectFromDB();
 })();
