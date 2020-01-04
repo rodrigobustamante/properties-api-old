@@ -3,6 +3,6 @@ import propertiesController from '../controllers/properties';
 
 const router = Router();
 
-router.get('/byCommune:communesIds', propertiesController);
+router.post('/byCommuneId', propertiesController);
 
 export default router;
