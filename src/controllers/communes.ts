@@ -3,11 +3,7 @@ import { connectToDB, disconnectFromDB } from '../services/mongo';
 import splitSeparatedFields from '../utils/helpers';
 
 const get = async (req, res): Promise<any> => {
-  // Is necesary pass the portals parameters?
-  // We need to remove the duplicated values?
-  // Expose another endpoint to expose the portals?
-  // Or show to the user the name of the commune plus the portal, e.g: Providencia - TocToc
-  const { names, portals, page = 1, pageLimit = 24 } = req.query;
+  const { names, page = 1, pageLimit = 24 } = req.query;
 
   const filters = [{}];
   const parsedPage = Number(page) || 1;
@@ -17,12 +13,6 @@ const get = async (req, res): Promise<any> => {
     const namesArray = splitSeparatedFields(names);
 
     filters.push({ name: { $in: namesArray } });
-  }
-
-  if (portals) {
-    const portalsArray = splitSeparatedFields(portals);
-
-    filters.push({ portal: { $in: portalsArray } });
   }
 
   if (parsedPageLimit > 50) {
@@ -37,7 +27,7 @@ const get = async (req, res): Promise<any> => {
       .and(filters)
       .skip(parsedPageLimit * (parsedPage - 1))
       .limit(parsedPageLimit)
-      .select({ name: 1, portal: 1 })
+      .select({ name: 1 })
       .exec();
 
     await disconnectFromDB();
