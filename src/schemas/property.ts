@@ -13,16 +13,16 @@ const schema = gql`
 
   type Query {
     getProperties(
-      communesIds: Int
-      portals: Int
-      page: Int
-      pageLimit: Int
-      rooms: Int
-      bathrooms: Int
-      fromSize: Float
-      toSize: Float
-      fromPrice: Float
-      toPrice: Float
+      communesIds: [String],
+      portals: [String],
+      page: Int,
+      pageLimit: Int,
+      rooms: Int,
+      bathrooms: Int,
+      fromSize: Float,
+      toSize: Float,
+      fromPrice: Float,
+      toPrice: Float,
       orderBy: String
     ): [Property]
   }
