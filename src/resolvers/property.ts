@@ -2,7 +2,7 @@ import getProperties from '../controllers/properties';
 
 const resolvers = {
   Query: {
-    getProperties: (options = {}): any => getProperties(options),
+    getProperties: (parent, options = {}): any => getProperties(options),
   }
 }
 
