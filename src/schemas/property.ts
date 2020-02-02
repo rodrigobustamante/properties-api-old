@@ -10,22 +10,6 @@ const schema = gql`
     link: String
     portal: String
   }
-
-  type Query {
-    getProperties(
-      communesIds: [String],
-      portals: [String],
-      page: Int,
-      pageLimit: Int,
-      rooms: Int,
-      bathrooms: Int,
-      fromSize: Float,
-      toSize: Float,
-      fromPrice: Float,
-      toPrice: Float,
-      orderBy: String
-    ): [Property]
-  }
 `;
 
 export default schema;

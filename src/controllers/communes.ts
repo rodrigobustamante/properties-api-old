@@ -1,16 +1,15 @@
 import communeModel from '../models/commune';
 import { connectToDB, disconnectFromDB } from '../services/mongo';
-import splitSeparatedFields from '../utils/helpers';
 
-const get = async (req, res): Promise<any> => {
-  const { names, page = 1, pageLimit = 24 } = req.query;
+const getCommunes = async (options): Promise<any> => {
+  const { names, page = 1, pageLimit = 24 } = options;
 
   const filters = [{}];
   const parsedPage = Number(page) || 1;
   let parsedPageLimit = Number(pageLimit) || 24;
 
   if (names) {
-    const namesArray = splitSeparatedFields(names);
+    const namesArray = names;
 
     filters.push({ name: { $in: namesArray } });
   }
@@ -32,10 +31,10 @@ const get = async (req, res): Promise<any> => {
 
     await disconnectFromDB();
 
-    res.send(communes).status(200);
+    return communes;
   } catch (error) {
-    res.send({ message: error.messsage }).status(500);
+    throw new Error(error.message);
   }
 };
 
-export default get;
+export default getCommunes;

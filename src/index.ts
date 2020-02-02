@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 import { ApolloServer } from 'apollo-server';
-import propertiesSchema from './schemas/property';
-import propertiesResolver from './resolvers/property';
+import typeDefs from './schemas';
+import resolvers from './resolvers';
 
 dotenv.config();
 
-const server = new ApolloServer({ typeDefs: propertiesSchema, resolvers: propertiesResolver, });
+const server = new ApolloServer({ typeDefs, resolvers });
 
 server.listen({port: process.env.PORT || 4000}).then(({ url }) => {
-  console.log(`🚀  Server ready at ${url}`);
+  console.log(`🚀 Server ready at ${url}`);
 });
