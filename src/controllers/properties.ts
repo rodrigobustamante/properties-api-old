@@ -4,8 +4,6 @@ import propertyModel from '../models/property';
 import { connectToDB, disconnectFromDB } from '../services/mongo';
 
 const getProperties = async (options): Promise<any> => {
-  console.log({options});
-
   const {
     communesIds,
     portals,
