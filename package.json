@@ -20,7 +20,7 @@
     "@types/mongoose": "^5.5.34",
     "@types/node": "^13.1.2",
     "@types/redis": "^2.8.14",
-    "apollo-server": "^2.9.16",
+    "apollo-server": "^2.14.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "graphql": "^14.6.0",
