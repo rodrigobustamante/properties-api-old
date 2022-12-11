@@ -22,7 +22,7 @@
     "@types/redis": "^2.8.14",
     "apollo-server": "^2.9.16",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "graphql": "^14.6.0",
     "ioredis": "^4.14.1",
     "lodash": "^4.17.15",
